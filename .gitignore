@@ -1,0 +1,4 @@
+# Directories
+.vs/
+.vscode/
+tools/**/__pycache__/
