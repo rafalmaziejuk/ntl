@@ -45,12 +45,21 @@ def get_filtered_filepaths(directories=None, extensions=None):
 
     return filepaths
 
-def get_tracked_filepaths():
+def get_tracked_filepaths(directories=None):
     """
-    Returns list of paths to files tracked by git.
+    Returns list of paths to files, tracked by git, fitting the criteria.
+
+    Args:
+        directories:
+            directories that should be a part of filepaths
 
     Returns:
         list[pathlib.Path]:
             list of paths to tracked files
     """
-    return [pathlib.Path(repo.working_tree_dir) / file.a_path for file in repo.index.diff('HEAD')]
+    filepaths = [pathlib.Path(repo.working_tree_dir) / file.a_path for file in repo.index.diff('HEAD')]
+
+    if directories:
+        filepaths = [path for path in filepaths if not any(part in directories for part in path.parts)]
+
+    return filepaths

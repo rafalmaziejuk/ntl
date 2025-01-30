@@ -107,7 +107,8 @@ def _add_copyright(args):
         int:
             always 0 (success)
     """
-    paths = get_tracked_filepaths()
+    dirs = ('third_party')
+    paths = get_tracked_filepaths(dirs)
     for path in paths:
         if path.suffix in EXTENSION_TO_COMMENT_STYLE.keys():
             _update_copyright_notice(path)
