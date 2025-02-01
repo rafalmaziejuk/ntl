@@ -90,7 +90,8 @@ def _update_copyright_notice(path):
             index = index + 1
 
         copyright_notice = COPYRIGHT_NOTICE_TEMPLATE.format(year_range=current_year)[1:]
-        copyright_notice_lines = [f"{comment_style} {line}" for line in copyright_notice.splitlines(True)]
+        copyright_notice_lines = [f"{comment_style} {line}" if line != '\n' else f"{comment_style}{line}" 
+                                  for line in copyright_notice.splitlines(True)]
         lines.insert(index, ''.join(copyright_notice_lines))
 
     with open(path, 'w') as file:
