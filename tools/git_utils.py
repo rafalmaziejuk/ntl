@@ -57,7 +57,9 @@ def get_tracked_filepaths(directories=None):
         list[pathlib.Path]:
             list of paths to tracked files
     """
-    filepaths = [pathlib.Path(repo.working_tree_dir) / file.a_path for file in repo.index.diff('HEAD')]
+    filepaths = [pathlib.Path(repo.working_tree_dir) / file.a_path
+                 for file in repo.index.diff('HEAD', R=True)
+                 if file.change_type != 'D']
 
     if directories:
         filepaths = [path for path in filepaths if not any(part in directories for part in path.parts)]
