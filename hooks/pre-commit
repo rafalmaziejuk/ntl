@@ -1,0 +1,17 @@
+#!/bin/sh
+
+python3 tools/ntl format check
+if [ $? -eq 1 ]; then
+    echo "Pre-commit hook: formatting check failed. Fixing formatting."
+    
+    python3 tools/ntl format fix
+    if [ $? -eq 1 ]; then
+        echo "Pre-commit hook: formatting failed. Commit aborted."
+        exit 1
+    fi
+elif [ $? -eq 2 ]; then
+    echo "Pre-commit hook: clang-format unavailable. Commit aborted."
+    exit 1
+fi
+
+python3 tools/ntl copyright
