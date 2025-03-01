@@ -53,7 +53,7 @@ def _configure(args):
         int:
             0 on success, 1 on failure
     """
-    cmd = f'cmake -B "{args.dir}" --preset clang-tidy'
+    cmd = f'cmake -B "{args.dir}" --preset clang-tidy -DCMAKE_EXPORT_COMPILE_COMMANDS=ON'
     return run_command_result(cmd)
 
 def _prepare_compile_commands_file(args):
@@ -70,6 +70,7 @@ def _prepare_compile_commands_file(args):
     
     from re import sub
     modified_data = sub(r"(-I)([^ ]*third_party[^ ]*include\b)", r"-isystem \2", data)
+    modified_data = sub(r"@[^ ]+\.modmap", "", modified_data)
 
     with open(compile_commands_path, 'w') as file:
         file.write(modified_data)
