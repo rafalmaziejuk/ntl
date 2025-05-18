@@ -94,7 +94,9 @@ def add_subparsers(subparsers):
     dirs = ('include',
             'sandbox',
             'src',
-            'tests')
+            'tests',
+            'main',
+            'components')
     extensions = ('.cpp',
                   '.h',
                   '.inl')
