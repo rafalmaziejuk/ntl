@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2025 Rafal Maziejuk
+# Copyright 2025-2026 Rafal Maziejuk
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ def _update_copyright_notice(path):
         if any([year for year in year_range if year and int(year) == current_year]):
             return
         
-        lines[index] = f"{comment_style}Copyright {year_range[0]}-{current_year} Rafal Maziejuk\n"
+        lines[index] = f"{comment_style} Copyright {year_range[0]}-{current_year} Rafal Maziejuk\n"
     else:
         index = 0
         if lines[0].startswith('#!'):
