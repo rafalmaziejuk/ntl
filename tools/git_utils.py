@@ -39,9 +39,9 @@ def get_filtered_filepaths(directories=None, extensions=None):
     filepaths = []
     for dir in dirs:
         if extensions:
-            filepaths += [path for path in dir.rglob('*') if path.suffix in extensions]
+            filepaths += [path for path in dir.rglob('*') if path.suffix in extensions and not path.is_dir()]
         else:
-            filepaths += [path for path in dir.rglob('*')]
+            filepaths += [path for path in dir.rglob('*') if not path.is_dir()]
 
     return filepaths
 

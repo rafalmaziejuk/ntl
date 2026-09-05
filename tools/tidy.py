@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pathlib
-
 from .utils import (
     find_executable,
     run_command_result
@@ -53,7 +51,7 @@ def _configure(args):
         int:
             0 on success, 1 on failure
     """
-    cmd = f'cmake -B "{args.dir}" --preset clang-tidy -DCMAKE_EXPORT_COMPILE_COMMANDS=ON'
+    cmd = f'cmake -B "{args.dir}" --preset clang-tidy'
     return run_command_result(cmd)
 
 def _prepare_compile_commands_file(args):
@@ -64,16 +62,26 @@ def _prepare_compile_commands_file(args):
         args:
             arguments parsed from command-line
     """
-    compile_commands_path = pathlib.Path(args.dir) / 'compile_commands.json'
-    with open(compile_commands_path, 'r') as file:
-        data = file.read()
+    import json
+    from pathlib import Path
+
+    compile_commands_path = Path(args.dir) / 'compile_commands.json'
+    with open(compile_commands_path, 'r', encoding='utf-8') as file:
+        entries = json.load(file)
+
+    entries = [
+        entry
+        for entry in entries
+        if 'third_party' not in Path(entry['file']).parts
+    ]
     
     from re import sub
-    modified_data = sub(r"(-I)([^ ]*third_party[^ ]*include\b)", r"-isystem \2", data)
-    modified_data = sub(r"@[^ ]+\.modmap", "", modified_data)
+    for entry in entries:
+        entry['command'] = sub(r"(-I)([^ ]*third_party[^ ]*include\b)", r"-isystem \2", entry['command'])
+        entry['command'] = sub(r"@[^ ]+\.modmap", "", entry['command'])
 
-    with open(compile_commands_path, 'w') as file:
-        file.write(modified_data)
+    with open(compile_commands_path, 'w', encoding='utf-8') as file:
+        json.dump(entries, file, indent=2)
 
 def _check(args):
     """
@@ -109,5 +117,5 @@ def add_subparsers(subparsers):
     tidy_parser.set_defaults(func=_check)
     tidy_parser.add_argument('--dir', '-d',
                              help='Output binary directory',
-                             default='build',
+                             default='build-tidy',
                              dest='dir')
