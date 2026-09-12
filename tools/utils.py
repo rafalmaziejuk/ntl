@@ -42,18 +42,20 @@ def run_command_result(command):
     """
     print(f'Running [{command}] command', flush=True)
     
-    try:
-        result = subprocess.run(command, 
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                shell=True)
-    except subprocess.CalledProcessError:
-        print(f'{command} failed to run', flush=True)
-        return 1
-    
+    result = subprocess.run(command,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            text=True,
+                            shell=True)
+
     if result.returncode != 0:
-        print("Failed\n")
-        print(result.stdout.decode('utf-8'), flush=True)
+        if result.stdout:
+            print(result.stdout, flush=True)
+
+        if result.stderr:
+            print(result.stderr, flush=True)
+
+        print(f'Command failed with exit code {result.returncode}\n', flush=True)
         return 1
 
     print("Success\n")

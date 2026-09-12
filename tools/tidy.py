@@ -15,30 +15,8 @@
 # limitations under the License.
 
 from .utils import (
-    find_executable,
     run_command_result
 )
-
-CLANG_TIDY_SCRIPT = find_executable('run-clang-tidy')
-CLANG_TIDY_CMD = find_executable('clang-tidy')
-
-def _check_prerequisites():
-    """
-    Check if prerequisites are satisfied.
-
-    Args:
-        args:
-            arguments parsed from command-line
-    Returns:
-        int:
-            0 on success, 1 on failure
-    """
-    if any([CLANG_TIDY_CMD is None, 
-            CLANG_TIDY_SCRIPT is None]):
-        print("Prerequisites not satisfied")
-        return 1
-    
-    return 0
 
 def _configure(args):
     """
@@ -54,38 +32,23 @@ def _configure(args):
     cmd = f'cmake -B "{args.dir}" --preset clang-tidy'
     return run_command_result(cmd)
 
-def _prepare_compile_commands_file(args):
+def _build(args):
     """
-    Prepares compile_commands.json so that clang-tidy is not run for 3rd party dependencies.
-
-    Args:
-        args:
-            arguments parsed from command-line
-    """
-    import json
-    from pathlib import Path
-
-    compile_commands_path = Path(args.dir) / 'compile_commands.json'
-    with open(compile_commands_path, 'r', encoding='utf-8') as file:
-        entries = json.load(file)
-
-    entries = [
-        entry
-        for entry in entries
-        if 'third_party' not in Path(entry['file']).parts
-    ]
+        Runs CMake build step.
     
-    from re import sub
-    for entry in entries:
-        entry['command'] = sub(r"(-I)([^ ]*third_party[^ ]*include\b)", r"-isystem \2", entry['command'])
-        entry['command'] = sub(r"@[^ ]+\.modmap", "", entry['command'])
-
-    with open(compile_commands_path, 'w', encoding='utf-8') as file:
-        json.dump(entries, file, indent=2)
+        Args:
+            args:
+                arguments parsed from command-line
+        Returns:
+            int:
+                0 on success, 1 on failure
+        """
+    cmd = f'cmake --build "{args.dir}"'
+    return run_command_result(cmd)
 
 def _check(args):
     """
-    Runs clang-tidy check on the whole repository.
+    Configures and builds the project with clang-tidy check enabled.
 
     Args:
         args:
@@ -94,16 +57,13 @@ def _check(args):
         int:
             0 on success, 1 on failure
     """
-    if _check_prerequisites() == 1:
-        return 1
-
     if _configure(args) == 1:
         return 1
-    
-    _prepare_compile_commands_file(args)
 
-    cmd = f'python "{CLANG_TIDY_SCRIPT}" -clang-tidy-binary "{CLANG_TIDY_CMD}" -p "{args.dir}"'
-    return run_command_result(cmd)
+    if _build(args) == 1:
+        return 1
+    
+    return 0
 
 def add_subparsers(subparsers):
     """
