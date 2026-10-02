@@ -47,7 +47,7 @@ def get_filtered_filepaths(directories=None, extensions=None):
 
 def get_tracked_filepaths(excluded_directories=None):
     """
-    Returns list of paths to files, tracked by git, fitting the criteria.
+    Returns list of paths to files tracked by git, fitting the criteria.
 
     Args:
         excluded_directories:
@@ -57,11 +57,17 @@ def get_tracked_filepaths(excluded_directories=None):
         list[pathlib.Path]:
             list of paths to tracked files
     """
-    filepaths = [pathlib.Path(repo.working_tree_dir) / file.a_path
-                 for file in repo.index.diff('HEAD', R=True)
-                 if file.change_type != 'D']
+    filepaths = [
+        pathlib.Path(repo.working_tree_dir) / file.b_path
+        for file in repo.index.diff('HEAD', R=True)
+        if file.change_type != 'D'
+    ]
 
     if excluded_directories:
-        filepaths = [path for path in filepaths if not any(part in excluded_directories for part in path.parts)]
+        filepaths = [
+            path
+            for path in filepaths
+            if not any(part in excluded_directories for part in path.parts)
+        ]
 
     return filepaths
